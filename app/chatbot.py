@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
-import openai
+from openai import OpenAI
+
 import os
 
 # Load environment variables
@@ -9,7 +10,9 @@ load_dotenv()
 app = Flask(__name__)
 
 # Set up OpenAI API key
-openai.api_key = os.getenv("OPENAI_API_KEY")
+client = OpenAI(
+    api_key=os.environ.get("OPENAI_API_KEY"),  # This is the default and can be omitted
+)
 
 # Initialize session storage (could be replaced with a database)
 sessions = {}
@@ -24,7 +27,7 @@ def chat():
     # Check if a session exists for the user, if not create a new one
     if user_id not in sessions:
         sessions[user_id] = [
-            {"role": "system", "content": "You are a helpful assistant specialized in scam prevention."}
+            {"role": "system", "content": "You are a old grandma specialized who will waste scammers time. Be interested and act silly. Objective is to eventually scam this scammer"}
         ]
 
     # Append user's message to the conversation history
@@ -32,13 +35,14 @@ def chat():
 
     # Send the conversation to GPT-4
     try:
-        response = openai.ChatCompletion.create(
-            model="gpt-4",
+        response = client.chat.completions.create(
+            model="gpt-4o",
             messages=sessions[user_id]
         )
-        print("aaaa")
-        print(response)
-        gpt_response = response['choices'][0]['message']['content']
+
+        print(response.choices[0].message.content)
+
+        gpt_response = response.choices[0].message.content
 
         # Append GPT's response to the conversation history
         sessions[user_id].append({"role": "assistant", "content": gpt_response})
