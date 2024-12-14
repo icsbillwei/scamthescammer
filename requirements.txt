@@ -6,3 +6,4 @@ Flask-SQLAlchemy==2.5.1
 Werkzeug==2.2.2
 openai==0.10.2
 twilio==9.4.1
+python-dotenv==0.19.1
