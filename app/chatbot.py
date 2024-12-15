@@ -62,9 +62,12 @@ def chat(user_id, message, to_number, mode="gen_alpha"):
 @app.route("/receive_sms", methods=["POST"])
 def receive_messages():
     # Get the incoming message
-    print(request.form)
+    from_number = request.form.get("From")  # Get the sender's phone number
+    message_body = request.form.get("Body")  # Get the SMS body
 
-    chat("123", "Imma make you rich", "+19055053866")
+    chat("123", message_body, from_number)
+
+    print(sessions)
 
     # Process the incoming message
     return jsonify({"response": "SUCCESS"})
