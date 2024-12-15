@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from openai import OpenAI
-
+from .config import get_prompt, personalities, init_agent
 import os
 
 # Load environment variables
@@ -14,20 +14,19 @@ client = OpenAI(
     api_key=os.environ.get("OPENAI_API_KEY"),  # This is the default and can be omitted
 )
 
-# Initialize session storage (could be replaced with a database)
+# Initialize session storage (TODO: should be replaced with a database)
 sessions = {}
 
-@app.route('/chat', methods=['POST'])
-def chat():
-    # Parse incoming data
-    data = request.json
-    user_id = data.get('user_id')  # Unique user identifier
-    message = data.get('message')  # User's input message
+twilio_agent = init_agent()
+FROM_NUMBER = os.environ.get("FROM_NUMBER")
 
+
+def chat(user_id, message, to_number, mode="gen_alpha"):
     # Check if a session exists for the user, if not create a new one
     if user_id not in sessions:
         sessions[user_id] = [
-            {"role": "system", "content": "You are a old grandma specialized who will waste scammers time. Be interested and act silly. Objective is to eventually scam this scammer"}
+            {"role": "system", "content": get_prompt("default")},
+            {"role": "system", "content": get_prompt(mode)}
         ]
 
     # Append user's message to the conversation history
@@ -40,17 +39,35 @@ def chat():
             messages=sessions[user_id]
         )
 
-        print(response.choices[0].message.content)
-
         gpt_response = response.choices[0].message.content
 
         # Append GPT's response to the conversation history
         sessions[user_id].append({"role": "assistant", "content": gpt_response})
 
+        # Send the GPT response via Twilio
+        twilio_agent.send_message(
+            from_number=FROM_NUMBER,
+            to_number=to_number,
+            message_body=gpt_response
+        )
+
+        return jsonify({"response": gpt_response, "status": "Message sent!"})
+
         # Return the GPT response
         return jsonify({"response": gpt_response})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+@app.route("/receive_sms", methods=["POST"])
+def receive_messages():
+    # Get the incoming message
+    print(request.form)
+
+    chat("123", "Imma make you rich", "+19055053866")
+
+    # Process the incoming message
+    return jsonify({"response": "SUCCESS"})
 
 if __name__ == '__main__':
     app.run(debug=True)
