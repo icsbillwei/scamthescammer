@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-from openai import OpenAI
+from openai import OpenAI as Client
 from .config import get_prompt, personalities, init_agent
 import os
 
@@ -10,7 +10,7 @@ load_dotenv()
 app = Flask(__name__)
 
 # Set up OpenAI API key
-client = OpenAI(
+client = Client(
     api_key=os.environ.get("OPENAI_API_KEY"),  # This is the default and can be omitted
 )
 
