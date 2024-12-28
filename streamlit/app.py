@@ -54,8 +54,15 @@ def page_personality_selection():
     # Input for scammer phone number
     phone_number = st.text_input("Enter Scammer's Phone Number")
     
-    # Message to be sent
-    message = "我正在外地出差，请回复这个号码: <INSERT TWILIO NUMBER>"
+    # Message to be sent to redirect to twilio number (base on personality selected), in Chinese
+    messages = {
+        "Sweet Grandma": "我妈妈最近更换了手机，请回复这个号码来联系她: <INSERT TWILIO NUMBER>",
+        "Annoying Gen-Alpha": "我最近更换了手机，请回复这个号码: <INSERT TWILIO NUMBER>",
+        "Crazy AI": "我最近更换了手机，请回复这个号码: <INSERT TWILIO NUMBER>",
+        "Tech Bro": "我最近更换了手机，请回复这个号码: <INSERT TWILIO NUMBER>"
+    }
+    
+    message = f'Autoreply: {messages.get(personality, "我最近更换了手机，请回复这个号码: <INSERT TWILIO NUMBER>")}'
     st.code(message)
     
     if st.button("Send Message"):
@@ -70,9 +77,6 @@ def page_personality_selection():
 def page_chat_display():
     st.title("Scammer vs AI Agent Chat")
     st.write("Here is the live conversation:")
-
-    # Display chat history in Streamlit Chat Interface
-    st.title("Scammer vs AI Agent Chat")
 
     # Fetch and display chat history
     chat_history = dummy_chat_history()
